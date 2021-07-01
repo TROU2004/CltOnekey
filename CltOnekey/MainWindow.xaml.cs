@@ -5,6 +5,7 @@ using OsuParsers.Database;
 using OsuParsers.Decoders;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,7 @@ namespace CltOnekey
     public partial class MainWindow : Window
     {
         public Database Database { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -46,18 +48,30 @@ namespace CltOnekey
 
         private void InitDatabase(string osudb)
         {
-            try
+            progressBar.Visibility = Visibility.Visible;
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (obj, arg) =>
             {
-                Database = new Database(DatabaseDecoder.DecodeOsu(osudb), Path.GetDirectoryName(osudb));
-                Title = string.Format("CltOnekey ({0}个谱面已加载)", Database.OsuDatabase.BeatmapCount);
-                text_Hint.Text = string.Format("加载的谱面数据: {0}", osudb);
-            }
-            catch (Exception ex)
+                try { Database = new Database(DatabaseDecoder.DecodeOsu(osudb), Path.GetDirectoryName(osudb)); }
+                catch { }
+            };
+            worker.RunWorkerCompleted += (obj, arg) =>
             {
-                Title = "CltOnekey (没有找到谱面)";
-                text_Hint.Text = "点击这里重新指定osu!.db";
-                snackbar.MessageQueue.Enqueue(ex.Message.Equals("Unable to find the specified file.") ? "没有找到osu!目录, 请手动指定" : ex.Message);
-            }
+                progressBar.Visibility = Visibility.Hidden;
+                if (Database != null)
+                {
+                    Title = string.Format("CltOnekey ({0}个谱面已加载)", Database.OsuDatabase.BeatmapCount);
+                    text_Hint.Text = string.Format("加载的谱面数据: {0}", osudb);
+                    snackbar.MessageQueue.Enqueue(string.Format("加载了{0}个谱面数据", Database.OsuDatabase.BeatmapCount));
+                }
+                else
+                {
+                    Title = "CltOnekey (没有找到谱面)";
+                    text_Hint.Text = "点击这里重新指定osu!.db";
+                    snackbar.MessageQueue.Enqueue("没有找到osu!目录, 请手动指定");
+                }
+            };
+            worker.RunWorkerAsync();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -79,16 +93,27 @@ namespace CltOnekey
                 if (((int)dialog1.ShowDialog()) == 1)
                 {
                     Directory.CreateDirectory(Path.Combine(dialog1.SelectedFolder, "collection"));
-                    foreach (var collection in Database.CollectionDatabase.Collections)
+                    progressBar.Visibility = Visibility.Visible;
+                    BackgroundWorker worker = new BackgroundWorker();
+                    worker.DoWork += (obj, arg) =>
                     {
-                        Directory.CreateDirectory(Path.Combine(dialog1.SelectedFolder, "collection", collection.Name));
-                        List<CltOnekeyBeatmap> CltOnekeyBeatmaps = CltOnekeyBeatmap.ConvertFromDbBeatmaps(Database.FindBeatmapsFromHashes(collection.MD5Hashes));
-                        foreach (var item in CltOnekeyBeatmaps)
+                        foreach (var collection in Database.CollectionDatabase.Collections)
                         {
-                            var name = Util.RemoveInvalidCharacters(string.Format("({0}){1} {2} [{3}].json", item.BID, item.Artist, item.Title, item.Difficult));
-                            File.WriteAllText(Path.Combine(dialog1.SelectedFolder, "collection", collection.Name, name), JsonConvert.SerializeObject(item));
+                            Directory.CreateDirectory(Path.Combine(dialog1.SelectedFolder, "collection", collection.Name));
+                            List<CltOnekeyBeatmap> CltOnekeyBeatmaps = CltOnekeyBeatmap.ConvertFromDbBeatmaps(Database.FindBeatmapsFromHashes(collection.MD5Hashes));
+                            foreach (var item in CltOnekeyBeatmaps)
+                            {
+                                var name = Util.RemoveInvalidCharacters(string.Format("({0}){1} {2} [{3}].json", item.BID, item.Artist, item.Title, item.Difficult));
+                                File.WriteAllText(Path.Combine(dialog1.SelectedFolder, "collection", collection.Name, name), JsonConvert.SerializeObject(item));
+                            }
                         }
-                    }
+                    };
+                    worker.RunWorkerCompleted += (obj, arg) => 
+                    {
+                        progressBar.Visibility = Visibility.Hidden;
+                        snackbar.MessageQueue.Enqueue("导出已完成!");
+                    };
+                    worker.RunWorkerAsync();
                 }
             }
         }
@@ -103,20 +128,30 @@ namespace CltOnekey
             };
             if (((int)dialog1.ShowDialog()) == 1)
             {
-                CollectionDatabase collectionDatabase = new CollectionDatabase();
-                collectionDatabase.OsuVersion = 20210520;
-                var collections = Database.BuildCollections(dialog1.SelectedFolder);
-                collectionDatabase.Collections = collections;
-                collectionDatabase.CollectionCount = collections.Count;
-                SaveFileDialog dialog = new SaveFileDialog
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += (obj, arg) =>
                 {
-                    Filter = "osu! Colllection Database (collection.db)|collection.db",
-                    InitialDirectory = Database.GamePath,
+                    CollectionDatabase collectionDatabase = new CollectionDatabase();
+                    collectionDatabase.OsuVersion = 20210520;
+                    var collections = Database.BuildCollections(dialog1.SelectedFolder);
+                    collectionDatabase.Collections = collections;
+                    collectionDatabase.CollectionCount = collections.Count;
+                    SaveFileDialog dialog = new SaveFileDialog
+                    {
+                        Filter = "osu! Colllection Database (collection.db)|collection.db",
+                        InitialDirectory = Database.GamePath,
+                    };
+                    if (dialog.ShowDialog().GetValueOrDefault(false))
+                    {
+                        collectionDatabase.Save(dialog.FileName);
+                    }
                 };
-                if (dialog.ShowDialog().GetValueOrDefault(false))
+                worker.RunWorkerCompleted += (obj, arg) =>
                 {
-                    collectionDatabase.Save(dialog.FileName);
-                }
+                    progressBar.Visibility = Visibility.Hidden;
+                    snackbar.MessageQueue.Enqueue("导出已完成!");
+                };
+                worker.RunWorkerAsync();
             }
         }
     }

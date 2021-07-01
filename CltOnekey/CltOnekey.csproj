@@ -24,4 +24,8 @@
     <Resource Include="Resources\collection_folder.jpg" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Dialog\" />
+  </ItemGroup>
+
 </Project>

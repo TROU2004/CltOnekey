@@ -1,11 +1,12 @@
-﻿using OsuParsers.Database.Objects;
+﻿using Newtonsoft.Json;
+using OsuParsers.Database.Objects;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CltOnekey
 {
-    class CltOnekeyBeatmap
+    public class CltOnekeyBeatmap
     {
         public string Type = "CltOnekey Collection Beatmap Profile";
         public string Hash { get; set; }
@@ -15,15 +16,16 @@ namespace CltOnekey
         public int SID { get; set; }
         public string Artist { get; set; }
         public string Difficult { get; private set; }
+        [JsonIgnore]
+        public bool Mismatch { get; set; }
 
         public static List<CltOnekeyBeatmap> ConvertFromDbBeatmaps(List<DbBeatmap> dbBeatmaps)
         {
             List<CltOnekeyBeatmap> CltOnekeyBeatmaps = new List<CltOnekeyBeatmap>();
             foreach (var dbBeatmap in dbBeatmaps)
             {
-                var CltOnekeyBeatmap = new CltOnekeyBeatmap
+                var CltOnekeyBeatmap = new CltOnekeyBeatmap(dbBeatmap.MD5Hash, false)
                 {
-                    Hash = dbBeatmap.MD5Hash,
                     UnicodeTitle = dbBeatmap.TitleUnicode,
                     Title = dbBeatmap.Title,
                     BID = dbBeatmap.BeatmapId,
@@ -34,6 +36,12 @@ namespace CltOnekey
                 CltOnekeyBeatmaps.Add(CltOnekeyBeatmap);
             }
             return CltOnekeyBeatmaps;
+        }
+
+        public CltOnekeyBeatmap(string hash, bool mismatch)
+        {
+            Hash = hash;
+            Mismatch = mismatch;
         }
     }
 }

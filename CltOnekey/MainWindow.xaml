@@ -21,9 +21,11 @@
                     </StackPanel>
                     <Image Margin="20" HorizontalAlignment="Right" Height="100" Width="100" Source="./Resources/collection_folder.jpg"></Image>
                 </StackPanel>
+                <ProgressBar Name="progressBar" Visibility="Hidden" Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Style="{StaticResource MaterialDesignCircularProgressBar}" Value="0" IsIndeterminate="True" />
                 <TextBlock FontSize="10" Style="{StaticResource MaterialDesignButtonTextBlock}" Name="text_Hint" Grid.Row="1" VerticalAlignment="Center" Margin="5" MouseLeftButtonUp="text_Hint_MouseLeftButtonUp" ></TextBlock>
                 <materialDesign:Snackbar Grid.Row="1" MessageQueue="{materialDesign:MessageQueue}" x:Name="snackbar" />
             </Grid>
         </materialDesign:DialogHost>
+        
     </Grid>
 </Window>
