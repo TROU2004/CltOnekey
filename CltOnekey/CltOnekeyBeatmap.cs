@@ -19,29 +19,38 @@ namespace CltOnekey
         [JsonIgnore]
         public bool Mismatch { get; set; }
 
-        public static List<CltOnekeyBeatmap> ConvertFromDbBeatmaps(List<DbBeatmap> dbBeatmaps)
+        private CltOnekeyBeatmap() { }
+
+        internal static List<CltOnekeyBeatmap> ConvertAllFrom(List<string> hashes)
         {
             List<CltOnekeyBeatmap> CltOnekeyBeatmaps = new List<CltOnekeyBeatmap>();
-            foreach (var dbBeatmap in dbBeatmaps)
+            var matched = MainWindow.Database.FindBeatmapsFromHashes(hashes);
+            var misMatched = MainWindow.Database.FindMismatchedMaps(hashes, matched);
+            foreach (var dbBeatmap in matched)
             {
-                var CltOnekeyBeatmap = new CltOnekeyBeatmap(dbBeatmap.MD5Hash, false)
+                var CltOnekeyBeatmap = new CltOnekeyBeatmap()
                 {
+                    Hash = dbBeatmap.MD5Hash,
                     UnicodeTitle = dbBeatmap.TitleUnicode,
                     Title = dbBeatmap.Title,
                     BID = dbBeatmap.BeatmapId,
                     SID = dbBeatmap.BeatmapSetId,
                     Artist = dbBeatmap.Artist,
-                    Difficult = dbBeatmap.Difficulty
+                    Difficult = dbBeatmap.Difficulty,
+                    Mismatch = false
+                };
+                CltOnekeyBeatmaps.Add(CltOnekeyBeatmap);
+            }
+            foreach (var hash in misMatched)
+            {
+                var CltOnekeyBeatmap = new CltOnekeyBeatmap()
+                {
+                    Hash = hash,
+                    Mismatch = true
                 };
                 CltOnekeyBeatmaps.Add(CltOnekeyBeatmap);
             }
             return CltOnekeyBeatmaps;
-        }
-
-        public CltOnekeyBeatmap(string hash, bool mismatch)
-        {
-            Hash = hash;
-            Mismatch = mismatch;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace CltOnekey
     /// </summary>
     public partial class MainWindow : Window
     {
-        public Database Database { get; set; }
+        public static Database Database { get; set; }
 
         public MainWindow()
         {
@@ -100,7 +100,7 @@ namespace CltOnekey
                         foreach (var collection in Database.CollectionDatabase.Collections)
                         {
                             Directory.CreateDirectory(Path.Combine(dialog1.SelectedFolder, "collection", collection.Name));
-                            List<CltOnekeyBeatmap> CltOnekeyBeatmaps = CltOnekeyBeatmap.ConvertFromDbBeatmaps(Database.FindBeatmapsFromHashes(collection.MD5Hashes));
+                            List<CltOnekeyBeatmap> CltOnekeyBeatmaps = CltOnekeyBeatmap.ConvertAllFrom(collection.MD5Hashes);
                             foreach (var item in CltOnekeyBeatmaps)
                             {
                                 var name = Util.RemoveInvalidCharacters(string.Format("({0}){1} {2} [{3}].json", item.BID, item.Artist, item.Title, item.Difficult));

@@ -27,6 +27,11 @@ namespace CltOnekey
             return OsuDatabase.Beatmaps.FindAll(map => hashes.Contains(map.MD5Hash));
         }
 
+        public List<string> FindMismatchedMaps(List<string> hashes, List<DbBeatmap> matched)
+        {
+            return hashes.Except(matched.Select(o => o.MD5Hash)).ToList();
+        }
+
         public List<Collection> BuildCollections(string path)
         {
             List<Collection> collections = new List<Collection>();
