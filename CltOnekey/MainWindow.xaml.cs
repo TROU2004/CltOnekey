@@ -27,10 +27,12 @@ namespace CltOnekey
     public partial class MainWindow : Window
     {
         public static Database Database { get; set; }
+        public static MainWindow Ins { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
+            Ins = this;
             InitDatabase(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "osu!", "osu!.db"));
         }
 
@@ -154,7 +156,6 @@ namespace CltOnekey
                     if (misMatchedMaps.Count > 0)
                     {
                         dialogHost.ShowDialog(new DownloadPage(misMatchedMaps));
-                        snackbar.MessageQueue.Enqueue(string.Format("开始下载缺失的{0}张谱面", misMatchedMaps.Count));
                     }
                 };
                 worker.RunWorkerAsync();

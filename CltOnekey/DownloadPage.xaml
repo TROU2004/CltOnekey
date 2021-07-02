@@ -3,23 +3,30 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CltOnekey"
+             xmlns:local="clr-namespace:CltOnekey" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="400">
-    <StackPanel Height="200" Width="400">
-        <ProgressBar Maximum="1" x:Name="progressBar" Height="10" Margin="5"></ProgressBar>
-        <TextBlock Margin="5" Style="{StaticResource MaterialDesignBody1TextBlock}">需要下载的谱面:</TextBlock>
-        <TreeView Grid.Row="2" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Auto" Name="treeView" ItemsSource="{Binding Path=Queue}">
-            <TreeView.Resources>
-                <DataTemplate DataType="{x:Type local:CltOnekeyBeatmap}">
-                    <Grid>
-                        <StackPanel>
-                            <TextBlock FontSize="14" FontWeight="Bold" Text="{Binding UnicodeTitle}"></TextBlock>
-                            <TextBlock FontSize="12" Text="{Binding Difficult}"></TextBlock>
-                        </StackPanel>
-                    </Grid>
-                </DataTemplate>
-            </TreeView.Resources>
-        </TreeView>
-    </StackPanel>
+             d:DesignHeight="200" d:DesignWidth="370">
+    <Grid>
+        <StackPanel Height="200" Width="370">
+            <ProgressBar Style="{StaticResource MaterialDesignLinearProgressBar}" Maximum="1" x:Name="progressBar" Height="10" Margin="5"></ProgressBar>
+            <TextBlock Margin="5" Style="{StaticResource MaterialDesignBody2TextBlock}">需要下载的谱面:</TextBlock>
+            <TreeView Grid.Row="2" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Auto" Name="treeView">
+                <TreeView.Resources>
+                    <DataTemplate DataType="{x:Type local:CltOnekeyBeatmap}">
+                        <Grid>
+                            <StackPanel HorizontalAlignment="Left">
+                                <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                                    <TextBlock FontSize="14" FontWeight="Bold" Text="{Binding Artist}"></TextBlock>
+                                    <TextBlock FontSize="14" FontWeight="Bold"> - </TextBlock>
+                                    <TextBlock FontSize="14" FontWeight="Bold" Text="{Binding UnicodeTitle}"></TextBlock>
+                                </StackPanel>
+                                <TextBlock HorizontalAlignment="Left" FontSize="12" Text="{Binding Difficulty}"></TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </TreeView.Resources>
+            </TreeView>
+        </StackPanel>
+        <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" Name="snackBar"></materialDesign:Snackbar>
+    </Grid>
 </UserControl>

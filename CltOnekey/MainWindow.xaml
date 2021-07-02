@@ -26,6 +26,5 @@
                 <materialDesign:Snackbar Grid.Row="1" MessageQueue="{materialDesign:MessageQueue}" x:Name="snackbar" />
             </Grid>
         </materialDesign:DialogHost>
-        
     </Grid>
 </Window>
