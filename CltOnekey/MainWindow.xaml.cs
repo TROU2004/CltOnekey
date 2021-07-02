@@ -156,7 +156,7 @@ namespace CltOnekey
                     progressBar.Visibility = Visibility.Hidden;
                     if (misMatchedMaps.Count > 0)
                     {
-                        dialogHost.ShowDialog(new DownloadPage(misMatchedMaps));
+                        new DownloadPage(misMatchedMaps).ShowDialog();
                     }
                 };
                 worker.RunWorkerAsync();

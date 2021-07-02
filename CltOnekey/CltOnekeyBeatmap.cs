@@ -15,7 +15,7 @@ namespace CltOnekey
         public int BID { get; set; }
         public int SID { get; set; }
         public string Artist { get; set; }
-        public string Difficulty { get; private set; }
+        public string Difficulty { get; set; }
 
         public static List<CltOnekeyBeatmap> ConvertFromDbBeatmaps(List<DbBeatmap> dbBeatmaps)
         {
@@ -32,6 +32,7 @@ namespace CltOnekey
                     Artist = dbBeatmap.Artist,
                     Difficulty = dbBeatmap.Difficulty
                 };
+                if (dbBeatmap.TitleUnicode == "") dbBeatmap.TitleUnicode = dbBeatmap.Title;
                 CltOnekeyBeatmaps.Add(CltOnekeyBeatmap);
             }
             return CltOnekeyBeatmaps;
