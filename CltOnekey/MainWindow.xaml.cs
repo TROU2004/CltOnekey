@@ -133,6 +133,7 @@ namespace CltOnekey
             if (((int)dialog1.ShowDialog()) == 1)
             {
                 BackgroundWorker worker = new BackgroundWorker();
+                progressBar.Visibility = Visibility.Visible;
                 worker.DoWork += (obj, arg) =>
                 {
                     CollectionDatabase collectionDatabase = new CollectionDatabase();
