@@ -27,22 +27,20 @@ namespace CltOnekey
             return OsuDatabase.Beatmaps.FindAll(map => hashes.Contains(map.MD5Hash));
         }
 
-        public List<string> FindMismatchedMaps(List<string> hashes, List<DbBeatmap> matched)
-        {
-            return hashes.Except(matched.Select(o => o.MD5Hash)).ToList();
-        }
-
-        public List<Collection> BuildCollections(string path)
+        public List<Collection> BuildCollections(string path, List<CltOnekeyBeatmap> misMatchedMaps)
         {
             List<Collection> collections = new List<Collection>();
             foreach (var item in Directory.GetDirectories(path))
             {
-                Collection collection = new Collection();
-                collection.Name = Path.GetDirectoryName(item);
+                Collection collection = new Collection { Name = Path.GetDirectoryName(item) };
                 foreach (var map in Directory.GetFiles(item, "*.json"))
                 {
                     CltOnekeyBeatmap CltOnekeyBeatmap = JsonConvert.DeserializeObject<CltOnekeyBeatmap>(File.ReadAllText(map));
                     collection.MD5Hashes.Add(CltOnekeyBeatmap.Hash);
+                    if (OsuDatabase.Beatmaps.FindIndex((dbmap) => dbmap.MD5Hash == CltOnekeyBeatmap.Hash) == -1)
+                    {
+                        misMatchedMaps.Add(CltOnekeyBeatmap);
+                    }
                 }
                 collection.Count = collection.MD5Hashes.Count;
                 collections.Add(collection);

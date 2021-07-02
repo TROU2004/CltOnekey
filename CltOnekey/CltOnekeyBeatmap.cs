@@ -15,18 +15,12 @@ namespace CltOnekey
         public int BID { get; set; }
         public int SID { get; set; }
         public string Artist { get; set; }
-        public string Difficult { get; private set; }
-        [JsonIgnore]
-        public bool Mismatch { get; set; }
+        public string Difficulty { get; private set; }
 
-        private CltOnekeyBeatmap() { }
-
-        internal static List<CltOnekeyBeatmap> ConvertAllFrom(List<string> hashes)
+        public static List<CltOnekeyBeatmap> ConvertFromDbBeatmaps(List<DbBeatmap> dbBeatmaps)
         {
             List<CltOnekeyBeatmap> CltOnekeyBeatmaps = new List<CltOnekeyBeatmap>();
-            var matched = MainWindow.Database.FindBeatmapsFromHashes(hashes);
-            var misMatched = MainWindow.Database.FindMismatchedMaps(hashes, matched);
-            foreach (var dbBeatmap in matched)
+            foreach (var dbBeatmap in dbBeatmaps)
             {
                 var CltOnekeyBeatmap = new CltOnekeyBeatmap()
                 {
@@ -36,17 +30,7 @@ namespace CltOnekey
                     BID = dbBeatmap.BeatmapId,
                     SID = dbBeatmap.BeatmapSetId,
                     Artist = dbBeatmap.Artist,
-                    Difficult = dbBeatmap.Difficulty,
-                    Mismatch = false
-                };
-                CltOnekeyBeatmaps.Add(CltOnekeyBeatmap);
-            }
-            foreach (var hash in misMatched)
-            {
-                var CltOnekeyBeatmap = new CltOnekeyBeatmap()
-                {
-                    Hash = hash,
-                    Mismatch = true
+                    Difficulty = dbBeatmap.Difficulty
                 };
                 CltOnekeyBeatmaps.Add(CltOnekeyBeatmap);
             }

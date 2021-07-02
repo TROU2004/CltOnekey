@@ -1,4 +1,5 @@
 ﻿using FolderBrowserEx;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using OsuParsers.Database;
@@ -76,7 +77,7 @@ namespace CltOnekey
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog 
+            OpenFileDialog dialog = new OpenFileDialog
             {
                 Filter = "osu! Colllection Database (collection.db)|collection.db",
                 InitialDirectory = Database.GamePath
@@ -100,15 +101,15 @@ namespace CltOnekey
                         foreach (var collection in Database.CollectionDatabase.Collections)
                         {
                             Directory.CreateDirectory(Path.Combine(dialog1.SelectedFolder, "collection", collection.Name));
-                            List<CltOnekeyBeatmap> CltOnekeyBeatmaps = CltOnekeyBeatmap.ConvertAllFrom(collection.MD5Hashes);
+                            List<CltOnekeyBeatmap> CltOnekeyBeatmaps = CltOnekeyBeatmap.ConvertFromDbBeatmaps(Database.FindBeatmapsFromHashes(collection.MD5Hashes));
                             foreach (var item in CltOnekeyBeatmaps)
                             {
-                                var name = Util.RemoveInvalidCharacters(string.Format("({0}){1} {2} [{3}].json", item.BID, item.Artist, item.Title, item.Difficult));
+                                var name = Util.RemoveInvalidCharacters(string.Format("({0}){1} {2} [{3}].json", item.BID, item.Artist, item.Title, item.Difficulty));
                                 File.WriteAllText(Path.Combine(dialog1.SelectedFolder, "collection", collection.Name, name), JsonConvert.SerializeObject(item));
                             }
                         }
                     };
-                    worker.RunWorkerCompleted += (obj, arg) => 
+                    worker.RunWorkerCompleted += (obj, arg) =>
                     {
                         progressBar.Visibility = Visibility.Hidden;
                         snackbar.MessageQueue.Enqueue("导出已完成!");
@@ -120,6 +121,7 @@ namespace CltOnekey
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            var misMatchedMaps = new List<CltOnekeyBeatmap>();
             FolderBrowserDialog dialog1 = new FolderBrowserDialog
             {
                 Title = "选择CltOnekey格式的Collection目录",
@@ -133,7 +135,7 @@ namespace CltOnekey
                 {
                     CollectionDatabase collectionDatabase = new CollectionDatabase();
                     collectionDatabase.OsuVersion = 20210520;
-                    var collections = Database.BuildCollections(dialog1.SelectedFolder);
+                    var collections = Database.BuildCollections(dialog1.SelectedFolder, misMatchedMaps);
                     collectionDatabase.Collections = collections;
                     collectionDatabase.CollectionCount = collections.Count;
                     SaveFileDialog dialog = new SaveFileDialog
@@ -149,7 +151,11 @@ namespace CltOnekey
                 worker.RunWorkerCompleted += (obj, arg) =>
                 {
                     progressBar.Visibility = Visibility.Hidden;
-                    snackbar.MessageQueue.Enqueue("导出已完成!");
+                    if (misMatchedMaps.Count > 0)
+                    {
+                        dialogHost.ShowDialog(new DownloadPage(misMatchedMaps));
+                        snackbar.MessageQueue.Enqueue(string.Format("开始下载缺失的{0}张谱面", misMatchedMaps.Count));
+                    }
                 };
                 worker.RunWorkerAsync();
             }
